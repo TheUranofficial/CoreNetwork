@@ -21,11 +21,12 @@ public class ClientHandler extends SimpleChannelInboundHandler<Packet> {
     public void channelActive(ChannelHandlerContext context) {
         System.out.println("Connected to server");
 
-        this.dispatcher.send(new Test("zov"));
+        this.dispatcher.send(new Test("Test from client"));
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext context, Packet packet) {
+        System.out.println("Received packet: " + packet.getClass().getSimpleName());
         packet.handle();
     }
 

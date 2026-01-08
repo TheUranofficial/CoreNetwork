@@ -7,6 +7,8 @@ import io.netty.buffer.ByteBuf;
 public class Test implements Packet {
     public String message;
 
+    public Test() {}
+
     public Test(String message) {
         this.message = message;
     }
@@ -23,7 +25,6 @@ public class Test implements Packet {
 
     @Override
     public void handle() {
-        System.out.println("ZOXZDDSDS");
         System.out.println(this.message);
     }
 }

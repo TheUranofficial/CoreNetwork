@@ -18,11 +18,9 @@ public class PacketDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext context, ByteBuf byteBuf, List<Object> out) {
-        System.out.println(byteBuf);
         if (!byteBuf.isReadable()) {
             return;
         }
-        System.out.println(byteBuf);
 
         int packetId = ByteSerialize.readVarInt(byteBuf);
         Packet packet = this.dispatcher.decode(packetId);

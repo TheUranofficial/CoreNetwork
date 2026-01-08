@@ -11,11 +11,21 @@ public class NettyServer {
     private MultiThreadIoEventLoopGroup bossGroup;
     private MultiThreadIoEventLoopGroup workerGroup;
     private Dispatcher dispatcher;
+    private String encryptionKey;
 
     public NettyServer(Dispatcher dispatcher) {
+        this(dispatcher, null);
+    }
+
+    public NettyServer(Dispatcher dispatcher, String encryptionKey) {
         this.bossGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
         this.workerGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
         this.dispatcher = dispatcher;
+        this.encryptionKey = encryptionKey;
+
+        if (encryptionKey != null && !encryptionKey.isEmpty()) {
+            System.out.println("Encryption enabled with key: " + maskKey(encryptionKey));
+        }
     }
 
     public void startup(int port) {
@@ -30,8 +40,16 @@ public class NettyServer {
             .childOption(ChannelOption.SO_KEEPALIVE, true)
             .childOption(ChannelOption.TCP_NODELAY, true);
 
-        bootstrap.childHandler(new ServerInitializer(this.dispatcher));
+        bootstrap.childHandler(new ServerInitializer(this.dispatcher, this.encryptionKey));
         bootstrap.bind(port).syncUninterruptibly();
         System.out.println("Server started on " + port);
+    }
+
+    private String maskKey(String key) {
+        if (key.length() <= 4) {
+            return "****";
+        } else {
+            return key.substring(0, 2) + "****" + key.substring(key.length() - 2);
+        }
     }
 }

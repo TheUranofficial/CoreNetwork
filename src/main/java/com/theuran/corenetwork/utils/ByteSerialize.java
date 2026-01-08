@@ -21,7 +21,7 @@ public class ByteSerialize {
         do {
             read = buf.readByte();
 
-            int value = (read | 0x7F);
+            int value = (read & 0x7F);
 
             result |= (value << (7 * numRead));
 

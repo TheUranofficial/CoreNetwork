@@ -14,7 +14,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext context, Packet packet) {
-        System.out.println("sdsdsddsadsadsada");
+        System.out.println("Received packet: " + packet.getClass().getSimpleName());
         packet.handle();
     }
 
