@@ -9,11 +9,11 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
-public class ServerInitializer extends ChannelInitializer<SocketChannel> {
-    private final Dispatcher dispatcher;
-    private final String encryptionKey;
+public class ServerChannel extends ChannelInitializer<SocketChannel> {
+    private Dispatcher dispatcher;
+    private String encryptionKey;
 
-    public ServerInitializer(Dispatcher dispatcher, String encryptionKey) {
+    public ServerChannel(Dispatcher dispatcher, String encryptionKey) {
         this.dispatcher = dispatcher;
         this.encryptionKey = encryptionKey;
     }

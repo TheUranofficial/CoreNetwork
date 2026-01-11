@@ -9,7 +9,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 public class PacketEncoder extends MessageToByteEncoder<AbstractDispatcher.PacketType> {
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, AbstractDispatcher.PacketType packet, ByteBuf byteBuf) throws Exception {
-        ByteSerialize.writeVarInt(byteBuf, packet.getIndex());
+        ByteSerialize.writeString(byteBuf, packet.getId());
         packet.getPacket().toBytes(byteBuf);
     }
 }

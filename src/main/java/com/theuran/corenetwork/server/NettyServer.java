@@ -40,8 +40,9 @@ public class NettyServer {
             .childOption(ChannelOption.SO_KEEPALIVE, true)
             .childOption(ChannelOption.TCP_NODELAY, true);
 
-        bootstrap.childHandler(new ServerInitializer(this.dispatcher, this.encryptionKey));
+        bootstrap.childHandler(new ServerChannel(this.dispatcher, this.encryptionKey));
         bootstrap.bind(port).syncUninterruptibly();
+
         System.out.println("Server started on " + port);
     }
 

@@ -3,18 +3,16 @@ package com.theuran.corenetwork.client;
 import com.theuran.corenetwork.Dispatcher;
 import com.theuran.corenetwork.Test;
 import com.theuran.corenetwork.packet.Packet;
-import io.netty.channel.ChannelHandler;
+import com.theuran.corenetwork.packet.PacketContext;
+import com.theuran.corenetwork.utils.ChannelHandler;
+import com.theuran.corenetwork.utils.Side;
+import com.theuran.corenetwork.utils.SideOnly;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.util.concurrent.EventExecutorGroup;
 
-import java.nio.channels.SocketChannel;
-
-public class ClientHandler extends SimpleChannelInboundHandler<Packet> {
-    private final Dispatcher dispatcher;
-
+@SideOnly(Side.CLIENT)
+public class ClientHandler extends ChannelHandler {
     public ClientHandler(Dispatcher dispatcher) {
-        this.dispatcher = dispatcher;
+        super(dispatcher);
     }
 
     @Override
@@ -27,17 +25,12 @@ public class ClientHandler extends SimpleChannelInboundHandler<Packet> {
     @Override
     protected void channelRead0(ChannelHandlerContext context, Packet packet) {
         System.out.println("Received packet: " + packet.getClass().getSimpleName());
-        packet.handle();
+
+        this.dispatcher.handlePacket(packet, new PacketContext(this.dispatcher));
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext context) {
         System.out.println("Disconnected from server");
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext context, Throwable cause) {
-        cause.printStackTrace();
-        context.close();
     }
 }

@@ -4,16 +4,19 @@ import com.theuran.corenetwork.Dispatcher;
 import com.theuran.corenetwork.codec.PacketDecoder;
 import com.theuran.corenetwork.codec.PacketEncoder;
 import com.theuran.corenetwork.utils.Encryption;
+import com.theuran.corenetwork.utils.Side;
+import com.theuran.corenetwork.utils.SideOnly;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldPrepender;
 
-public class ClientInitializer extends ChannelInitializer<SocketChannel> {
+@SideOnly(Side.CLIENT)
+public class ClientChannel extends ChannelInitializer<SocketChannel> {
     private final Dispatcher dispatcher;
     private final String encryptionKey;
 
-    public ClientInitializer(Dispatcher dispatcher, String encryptionKey) {
+    public ClientChannel(Dispatcher dispatcher, String encryptionKey) {
         this.dispatcher = dispatcher;
         this.encryptionKey = encryptionKey;
     }

@@ -10,7 +10,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import java.util.List;
 
 public class PacketDecoder extends ByteToMessageDecoder {
-    private final AbstractDispatcher dispatcher;
+    private AbstractDispatcher dispatcher;
 
     public PacketDecoder(AbstractDispatcher dispatcher) {
         this.dispatcher = dispatcher;
@@ -22,8 +22,8 @@ public class PacketDecoder extends ByteToMessageDecoder {
             return;
         }
 
-        int packetId = ByteSerialize.readVarInt(byteBuf);
-        Packet packet = this.dispatcher.decode(packetId);
+        String packetId = ByteSerialize.readString(byteBuf);
+        Packet packet = this.dispatcher.create(packetId);
 
         packet.fromBytes(byteBuf);
         out.add(packet);
