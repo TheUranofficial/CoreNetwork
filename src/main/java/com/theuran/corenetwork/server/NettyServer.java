@@ -1,6 +1,7 @@
 package com.theuran.corenetwork.server;
 
-import com.theuran.corenetwork.Dispatcher;
+import com.theuran.corenetwork.AbstractDispatcher;
+import com.theuran.corenetwork.utils.ChannelHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.MultiThreadIoEventLoopGroup;
@@ -10,18 +11,20 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 public class NettyServer {
     private MultiThreadIoEventLoopGroup bossGroup;
     private MultiThreadIoEventLoopGroup workerGroup;
-    private Dispatcher dispatcher;
+    private AbstractDispatcher dispatcher;
     private String encryptionKey;
+    private Class<? extends ChannelHandler> handler;
 
-    public NettyServer(Dispatcher dispatcher) {
-        this(dispatcher, null);
+    public NettyServer(AbstractDispatcher dispatcher, Class<? extends ChannelHandler> handler) {
+        this(dispatcher, handler, null);
     }
 
-    public NettyServer(Dispatcher dispatcher, String encryptionKey) {
+    public NettyServer(AbstractDispatcher dispatcher, Class<? extends ChannelHandler> handler, String encryptionKey) {
         this.bossGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
         this.workerGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
         this.dispatcher = dispatcher;
         this.encryptionKey = encryptionKey;
+        this.handler = handler;
 
         if (encryptionKey != null && !encryptionKey.isEmpty()) {
             System.out.println("Encryption enabled with key: " + maskKey(encryptionKey));
@@ -38,9 +41,9 @@ public class NettyServer {
             .option(ChannelOption.AUTO_CLOSE, true)
             .option(ChannelOption.SO_REUSEADDR, true)
             .childOption(ChannelOption.SO_KEEPALIVE, true)
-            .childOption(ChannelOption.TCP_NODELAY, true);
+            .childOption(ChannelOption.TCP_NODELAY, true)
+            .childHandler(new ServerChannel(this.dispatcher, this.handler, this.encryptionKey));
 
-        bootstrap.childHandler(new ServerChannel(this.dispatcher, this.encryptionKey));
         bootstrap.bind(port).syncUninterruptibly();
 
         System.out.println("Server started on " + port);
