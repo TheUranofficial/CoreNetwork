@@ -11,10 +11,8 @@ import io.netty.channel.Channel;
 public abstract class AbstractDispatcher {
     private PacketRegistry registry = new PacketRegistry();
     private Channel channel;
-    private Side side;
 
-    public AbstractDispatcher(Side side) {
-        this.side = side;
+    public AbstractDispatcher() {
         this.setup();
     }
 
@@ -32,12 +30,12 @@ public abstract class AbstractDispatcher {
         this.channel.writeAndFlush(new PacketType(this.registry.getId(packet), packet));
     }
 
-    public void handlePacket(Packet packet, PacketContext context) {
-        if (packet instanceof ClientPacketHandler && this.side.isClient()) {
+    public void handlePacket(Packet packet, PacketContext context, Side side) {
+        if (packet instanceof ClientPacketHandler && side.isClient()) {
             ((ClientPacketHandler) packet).handleClient(context);
         }
 
-        if (packet instanceof ServerPacketHandler && this.side.isServer()) {
+        if (packet instanceof ServerPacketHandler && side.isServer()) {
             ((ServerPacketHandler) packet).handle(context);
         }
     }
