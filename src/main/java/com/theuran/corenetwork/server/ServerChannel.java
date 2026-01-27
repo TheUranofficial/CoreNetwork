@@ -9,7 +9,10 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import com.theuran.corenetwork.utils.Side;
+import com.theuran.corenetwork.utils.SideOnly;
 
+@SideOnly(Side.SERVER)
 public class ServerChannel extends ChannelInitializer<SocketChannel> {
     private AbstractDispatcher dispatcher;
     private String encryptionKey;

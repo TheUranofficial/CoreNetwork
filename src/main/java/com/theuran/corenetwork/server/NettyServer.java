@@ -7,7 +7,10 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import com.theuran.corenetwork.utils.Side;
+import com.theuran.corenetwork.utils.SideOnly;
 
+@SideOnly(Side.SERVER)
 public class NettyServer {
     private MultiThreadIoEventLoopGroup bossGroup;
     private MultiThreadIoEventLoopGroup workerGroup;
@@ -55,5 +58,10 @@ public class NettyServer {
         } else {
             return key.substring(0, 2) + "****" + key.substring(key.length() - 2);
         }
+    }
+
+    public void delete() {
+        this.bossGroup.shutdownGracefully();
+        this.workerGroup.shutdownGracefully();
     }
 }

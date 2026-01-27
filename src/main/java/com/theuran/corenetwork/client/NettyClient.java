@@ -12,7 +12,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 @SideOnly(Side.CLIENT)
 public class NettyClient {
-    private AbstractDispatcher dispatcher;
+    public AbstractDispatcher dispatcher;
     private String encryptionKey;
     private MultiThreadIoEventLoopGroup workerGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
     private Class<? extends ChannelHandler> handler;
@@ -42,5 +42,9 @@ public class NettyClient {
 
         bootstrap.connect(host, port).syncUninterruptibly();
         System.out.println("Connected to " + host + ":" + port);
+    }
+
+    public void delete() {
+        this.workerGroup.shutdownGracefully();
     }
 }

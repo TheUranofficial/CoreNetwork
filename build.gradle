@@ -1,3 +1,13 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.ow2.asm:asm:$asm"
+        classpath "org.ow2.asm:asm-tree:$asm"
+    }
+}
+
 plugins {
     id "java"
 }
@@ -10,5 +20,138 @@ repositories {
 }
 
 dependencies {
-    implementation "io.netty:netty-all:$netty"
+    implementation "io.netty:netty-handler:$netty"
+}
+
+/* AI pure code */
+import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.AnnotationNode
+import org.objectweb.asm.*
+
+static boolean hasSideOnly(List<AnnotationNode> annotations, String targetSide, String desc) {
+    annotations?.any { node ->
+        node.desc == desc && node.values?.with { values ->
+            (0..<values.size()).step(2).any { i ->
+                values[i] == "value" && values[i + 1] instanceof String[] && values[i + 1][1] != targetSide
+            }
+        }
+    } ?: false
+}
+
+static boolean hasAnySideOnly(node, String side, String desc) {
+    hasSideOnly(node.visibleAnnotations, side, desc) || hasSideOnly(node.invisibleAnnotations, side, desc)
+}
+
+static ClassNode readClass(File file) {
+    def node = new ClassNode()
+
+    new ClassReader(file.bytes).accept(node, 0)
+
+    return node
+}
+
+static void writeClass(ClassNode node, File file) {
+    file.parentFile.mkdirs()
+
+    def writer = new ClassWriter(0)
+
+    node.accept(writer)
+    file.bytes = writer.toByteArray()
+}
+
+static void transformClasses(String side, File inputDir, File outputDir, String sideOnlyDescriptor) {
+    if (!inputDir.exists()) {
+        return
+    }
+
+    def bannedPackages = [] as Set
+
+    inputDir.eachFileRecurse { file ->
+        if (file.name == "package-info.class" && hasAnySideOnly(readClass(file), side, sideOnlyDescriptor)) {
+            bannedPackages.add(inputDir.toPath().relativize(file.parentFile.toPath()).toString().replace("\\", "/") + "/")
+        }
+    }
+
+    inputDir.eachFileRecurse { file ->
+        if (!file.name.endsWith(".class")) {
+            return
+        }
+
+        def relativePath = inputDir.toPath().relativize(file.toPath()).toString().replace("\\", "/")
+
+        if (bannedPackages.any { relativePath.startsWith(it as String) }) {
+            return
+        }
+
+        def node = readClass(file)
+
+        if (hasAnySideOnly(node, side, sideOnlyDescriptor)) {
+            return
+        }
+
+        node.methods.removeIf { hasAnySideOnly(it, side, sideOnlyDescriptor) }
+        node.fields.removeIf { hasAnySideOnly(it, side, sideOnlyDescriptor) }
+
+        writeClass(node, new File(outputDir, relativePath))
+    }
+}
+
+def sideOnlyDescriptor = "Lcom/theuran/corenetwork/utils/SideOnly;"
+
+tasks.register("prepareClient") {
+    dependsOn classes
+
+    def outputDir = layout.buildDirectory.dir("client-output")
+
+    inputs.files(sourceSets.main.output)
+    outputs.dir(outputDir)
+
+    doLast {
+        def outDir = outputDir.get().asFile
+
+        outDir.deleteDir()
+        outDir.mkdirs()
+
+        copy {
+            from sourceSets.main.output.resourcesDir
+            into outDir
+        }
+
+        transformClasses("CLIENT", sourceSets.main.output.classesDirs.singleFile, outDir, sideOnlyDescriptor)
+    }
+}
+
+tasks.register("clientJar", Jar) {
+    dependsOn prepareClient
+    archiveClassifier = "client"
+    from layout.buildDirectory.dir("client-output")
+}
+
+tasks.register("transformServerClasses") {
+    dependsOn classes
+
+    def outputDir = layout.buildDirectory.dir("transformed-server")
+
+    inputs.files(sourceSets.main.output.classesDirs)
+    outputs.dir(outputDir)
+
+    doLast {
+        def outDir = outputDir.get().asFile
+
+        outDir.deleteDir()
+        outDir.mkdirs()
+
+        sourceSets.main.output.classesDirs.each { dir ->
+            if (dir.exists()) {
+                transformClasses("SERVER", dir, outDir, sideOnlyDescriptor)
+            }
+        }
+    }
+}
+
+tasks.register("serverJar", Jar) {
+    dependsOn transformServerClasses
+    archiveClassifier = "server"
+    from(sourceSets.main.output.resourcesDir) { exclude "assets/**" }
+    from layout.buildDirectory.dir("transformed-server")
 }
