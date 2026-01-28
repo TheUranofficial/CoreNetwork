@@ -33,8 +33,11 @@ public class ByteSerialize {
     }
 
     public static void writeString(ByteBuf buf, String string) {
-        writeVarInt(buf, string.length());
-        buf.writeCharSequence(string, StandardCharsets.UTF_8);
+        byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
+
+        writeVarInt(buf, bytes.length);
+
+        buf.writeBytes(bytes);
     }
 
     public static String readString(ByteBuf buf) {
