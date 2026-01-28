@@ -3,6 +3,7 @@ package com.theuran.corenetwork.server;
 import com.theuran.corenetwork.AbstractDispatcher;
 import com.theuran.corenetwork.utils.ChannelHandler;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.nio.NioIoHandler;
@@ -34,7 +35,7 @@ public class NettyServer {
         }
     }
 
-    public void startup(int port) {
+    public ChannelFuture startup(int port) {
         ServerBootstrap bootstrap = new ServerBootstrap();
 
         bootstrap
@@ -47,9 +48,11 @@ public class NettyServer {
             .childOption(ChannelOption.TCP_NODELAY, true)
             .childHandler(new ServerChannel(this.dispatcher, this.handler, this.encryptionKey));
 
-        bootstrap.bind(port).syncUninterruptibly();
+        ChannelFuture future = bootstrap.bind(port).syncUninterruptibly();
 
         System.out.println("Server started on " + port);
+
+        return future;
     }
 
     private String maskKey(String key) {

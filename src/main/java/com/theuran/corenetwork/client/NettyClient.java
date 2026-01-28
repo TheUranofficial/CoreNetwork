@@ -5,6 +5,7 @@ import com.theuran.corenetwork.utils.ChannelHandler;
 import com.theuran.corenetwork.utils.Side;
 import com.theuran.corenetwork.utils.SideOnly;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.nio.NioIoHandler;
@@ -31,7 +32,7 @@ public class NettyClient {
         }
     }
 
-    public void connect(String host, int port) {
+    public ChannelFuture connect(String host, int port) {
         Bootstrap bootstrap = new Bootstrap();
 
         bootstrap
@@ -40,8 +41,11 @@ public class NettyClient {
             .option(ChannelOption.SO_KEEPALIVE, true)
             .handler(new ClientChannel(this.dispatcher, this.handler, this.encryptionKey));
 
-        bootstrap.connect(host, port).syncUninterruptibly();
+        ChannelFuture future = bootstrap.connect(host, port).syncUninterruptibly();
+
         System.out.println("Connected to " + host + ":" + port);
+
+        return future;
     }
 
     public void delete() {
