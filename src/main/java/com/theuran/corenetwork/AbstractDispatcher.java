@@ -22,6 +22,10 @@ public abstract class AbstractDispatcher {
         this.channel = channel;
     }
 
+    public Channel getChannel() {
+        return this.channel;
+    }
+
     public <T extends Packet> void register(Class<T> packet) {
         this.registry.register(packet);
     }
