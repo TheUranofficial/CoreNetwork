@@ -28,6 +28,10 @@ public class ServerChannel extends ChannelInitializer<SocketChannel> {
     protected void initChannel(SocketChannel channel) throws Exception {
         ChannelPipeline pipeline = channel.pipeline();
 
+        if (this.encryptionKey != null && !this.encryptionKey.isEmpty()) {
+            pipeline.addLast("encryption", new Encryption(this.encryptionKey));
+        }
+
         pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(
             1048576,
             0,
@@ -35,10 +39,6 @@ public class ServerChannel extends ChannelInitializer<SocketChannel> {
             0,
             4
         ));
-
-        if (this.encryptionKey != null && !this.encryptionKey.isEmpty()) {
-            pipeline.addLast("encryption", new Encryption(this.encryptionKey));
-        }
 
         pipeline.addLast("decoder", new PacketDecoder(this.dispatcher));
         pipeline.addLast("encoder", new PacketEncoder());

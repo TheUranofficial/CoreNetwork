@@ -28,11 +28,11 @@ public class ClientChannel extends ChannelInitializer<SocketChannel> {
     protected void initChannel(SocketChannel channel) throws Exception {
         ChannelPipeline pipeline = channel.pipeline();
 
-        pipeline.addLast("prepender", new LengthFieldPrepender(4));
-
         if (this.encryptionKey != null && !this.encryptionKey.isEmpty()) {
             pipeline.addLast("encryption", new Encryption(this.encryptionKey));
         }
+
+        pipeline.addLast("prepender", new LengthFieldPrepender(4));
 
         pipeline.addLast("decoder", new PacketDecoder(this.dispatcher));
         pipeline.addLast("encoder", new PacketEncoder());

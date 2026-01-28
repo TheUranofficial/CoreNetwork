@@ -125,6 +125,13 @@ tasks.register("clientJar", Jar) {
     dependsOn prepareClient
     archiveClassifier = "client"
     from layout.buildDirectory.dir("client-output")
+
+    manifest {
+        attributes(
+                "Main-Class": "com.theuran.messenger.MessengerClient",
+                "Class-Path": configurations.runtimeClasspath.collect {"dependencies/" + it.name }.join(" ")
+        )
+    }
 }
 
 tasks.register("transformServerClasses") {
@@ -154,4 +161,16 @@ tasks.register("serverJar", Jar) {
     archiveClassifier = "server"
     from(sourceSets.main.output.resourcesDir) { exclude "assets/**" }
     from layout.buildDirectory.dir("transformed-server")
+
+    manifest {
+        attributes(
+                "Main-Class": "com.theuran.messenger.MessengerServer",
+                "Class-Path": configurations.runtimeClasspath.collect {"dependencies/" + it.name }.join(" ")
+        )
+    }
+}
+
+tasks.register("copyRuntimeLibs", Copy) {
+    from sourceSets.main.compileClasspath
+    into "build/dependencies/"
 }

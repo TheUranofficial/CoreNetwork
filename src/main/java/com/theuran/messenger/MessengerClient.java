@@ -7,7 +7,6 @@ import com.theuran.corenetwork.utils.SideOnly;
 import com.theuran.messenger.network.Dispatcher;
 import com.theuran.messenger.network.client.PacketHandler;
 import com.theuran.messenger.network.packets.ChatMessagePacket;
-import io.netty.channel.Channel;
 
 import java.util.Scanner;
 
