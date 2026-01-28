@@ -37,7 +37,5 @@ public class ClientChannel extends ChannelInitializer<SocketChannel> {
         pipeline.addLast("decoder", new PacketDecoder(this.dispatcher));
         pipeline.addLast("encoder", new PacketEncoder());
         pipeline.addLast("handler", this.handler.getConstructor(AbstractDispatcher.class).newInstance(this.dispatcher));
-
-        this.dispatcher.setChannel(channel);
     }
 }

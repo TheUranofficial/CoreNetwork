@@ -2,15 +2,13 @@ package com.theuran.corenetwork;
 
 import com.theuran.corenetwork.client.ClientPacketHandler;
 import com.theuran.corenetwork.packet.Packet;
-import com.theuran.corenetwork.packet.PacketContext;
 import com.theuran.corenetwork.packet.PacketRegistry;
 import com.theuran.corenetwork.server.ServerPacketHandler;
+import com.theuran.corenetwork.utils.ConnectionChannel;
 import com.theuran.corenetwork.utils.Side;
-import io.netty.channel.Channel;
 
 public abstract class AbstractDispatcher {
     private PacketRegistry registry = new PacketRegistry();
-    private Channel channel;
 
     public AbstractDispatcher() {
         this.setup();
@@ -18,51 +16,21 @@ public abstract class AbstractDispatcher {
 
     protected abstract void setup();
 
-    public void setChannel(Channel channel) {
-        this.channel = channel;
-    }
-
-    public Channel getChannel() {
-        return this.channel;
-    }
-
     public <T extends Packet> void register(Class<T> packet) {
         this.registry.register(packet);
     }
 
-    public void send(Packet packet) {
-        this.channel.writeAndFlush(new PacketType(this.registry.getId(packet), packet));
-    }
-
-    public void handlePacket(Packet packet, PacketContext context, Side side) {
+    public void handlePacket(Packet packet, ConnectionChannel channel, Side side) {
         if (packet instanceof ClientPacketHandler && side.isClient()) {
-            ((ClientPacketHandler) packet).handleClient(context);
+            ((ClientPacketHandler) packet).handleClient(channel);
         }
 
         if (packet instanceof ServerPacketHandler && side.isServer()) {
-            ((ServerPacketHandler) packet).handle(context);
+            ((ServerPacketHandler) packet).handle(channel);
         }
     }
 
     public Packet create(String id) {
         return this.registry.create(id);
-    }
-
-    public static class PacketType {
-        private final String id;
-        private final Packet packet;
-
-        public PacketType(String id, Packet packet) {
-            this.id = id;
-            this.packet = packet;
-        }
-
-        public String getId() {
-            return this.id;
-        }
-
-        public Packet getPacket() {
-            return this.packet;
-        }
     }
 }

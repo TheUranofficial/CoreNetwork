@@ -10,10 +10,6 @@ public class PacketRegistry {
         this.packets.put(packet.getSimpleName(), packet);
     }
 
-    public String getId(Packet packet) {
-        return packet.getClass().getSimpleName();
-    }
-
     public Packet create(String id) {
         try {
             return this.packets.get(id).newInstance();
