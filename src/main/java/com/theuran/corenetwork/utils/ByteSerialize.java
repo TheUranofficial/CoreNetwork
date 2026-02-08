@@ -41,6 +41,10 @@ public class ByteSerialize {
     }
 
     public static String readString(ByteBuf buf) {
-        return buf.readCharSequence(readVarInt(buf), StandardCharsets.UTF_8).toString();
+        byte[] bytes = new byte[readVarInt(buf)];
+
+        buf.readBytes(bytes);
+
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 }
